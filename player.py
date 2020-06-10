@@ -59,5 +59,6 @@ class Player():
     def flee(self, tile):
         """Moves the player randomly to an adjacent tile"""
         available_moves = tile.adjacent_moves()
+        print(f"av moves: { available_moves }")
         random_room = random.randint(0, len(available_moves) - 1)
         self.do_action(available_moves[random_room])

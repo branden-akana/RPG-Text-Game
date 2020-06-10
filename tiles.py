@@ -19,6 +19,7 @@ class MapTile:
     def adjacent_moves(self):
         """Returns all move actions for adjacent tiles."""
         moves = []
+        print(f"player is at {self.x},{self.y}")
         if world.tile_exists(self.x + 1, self.y):
             moves.append(actions.MoveRight())
         if world.tile_exists(self.x - 1, self.y):

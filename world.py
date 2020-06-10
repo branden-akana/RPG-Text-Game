@@ -19,6 +19,9 @@ def load_tiles():
                 __import__('tiles'), tile_name
                 )(x, y)
 
+    for x, y in _world:
+        print(f"{ x }, { y }: { _world[(x, y)] }")
+
 
 def tile_exists(x, y):
     return _world.get((x, y))
