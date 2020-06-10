@@ -21,5 +21,4 @@ def load_tiles():
 
 
 def tile_exists(x, y):
-    print(_world.get((x, y)))
     return _world.get((x, y))

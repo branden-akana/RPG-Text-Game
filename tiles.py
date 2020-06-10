@@ -23,9 +23,9 @@ class MapTile:
             moves.append(actions.MoveRight())
         if world.tile_exists(self.x - 1, self.y):
             moves.append(actions.MoveLeft())
-        if world.tile_exists(self.x, self.y + 1):
-            moves.append(actions.MoveUp())
         if world.tile_exists(self.x, self.y - 1):
+            moves.append(actions.MoveUp())
+        if world.tile_exists(self.x, self.y + 1):
             moves.append(actions.MoveDown())
 
         return moves
