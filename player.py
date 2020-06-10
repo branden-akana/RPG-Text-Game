@@ -5,23 +5,26 @@ import random
 
 
 class Player():
-    def __init__(self):
+    def __init__(self, game):
+
         self.inventory = [items.Gold(15), items.Rock()]
         self.hp = 100
         self.location_x, self.location_y = world.starting_position
         self.victory = False
+
+        self.game = game
 
     def is_alive(self):
         return self.hp > 0
 
     def print_inventory(self):
         for item in self.inventory:
-            print(item, '\n')
+            self.game.send_log_message(item, '\n')
 
     def move(self, dx, dy):
         self.location_x += dx
         self.location_y += dy
-        print(world.tile_exists(self.location_x, self.location_y).intro_text())
+        self.game.send_log_message(world.tile_exists(self.location_x, self.location_y).intro_text())
 
     def move_up(self):
         self.move(dx=0, dy=-1)
@@ -44,12 +47,12 @@ class Player():
                     max_damage = item.damage
                     best_weapon = item
 
-        print('You use {} against {}!'.format(best_weapon.name, enemy.name))
+        self.game.send_log_message('You use {} against {}!'.format(best_weapon.name, enemy.name))
         enemy.hp -= best_weapon.damage
         if not enemy.is_alive():
-            print('You killed a {}!'.format(enemy.name))
+            self.game.send_log_message('You killed a {}!'.format(enemy.name))
         else:
-            print('{} HP is {}.'.format(enemy.name, enemy.hp))
+            self.game.send_log_message('{} HP is {}.'.format(enemy.name, enemy.hp))
 
     def do_action(self, action, **kwargs):
         action_method = getattr(self, action.method.__name__)
