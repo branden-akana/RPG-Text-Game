@@ -33,14 +33,37 @@ def format_vector(vec: vec2) -> str:
 class Action():
     """An action that can be taken."""
 
-    def __init__(self, desc: str = None):
+    def __init__(self, desc: str, key: str):
 
         # the description of this action
         self.desc = desc or "unknown action"
 
+        # the hotkey that will run this action
+        self.key = key
+
     def do_action(self):
         """Run the action."""
         pass
+
+    @staticmethod
+    def register(actions: list, key: str, desc: str = 'a custom action'):
+        """Decorator that creates an Action and adds it to a list."""
+
+        def register_inner(func):
+
+            # define a custom class that runs the wrapped fn
+            class CustomAction(Action):
+                def __init__(self):
+                    Action.__init__(self, desc, key)
+
+                def do_action(self):
+                    func()
+
+            # add an instance of this class to our list of actions
+            actions.append(CustomAction())
+
+            return func
+        return register_inner
 
 
 class PlayerAction(Action):
@@ -48,10 +71,7 @@ class PlayerAction(Action):
 
     def __init__(self, player: Player, key: str, desc: str = None):
 
-        super().__init__(desc)
-
-        # the hotkey that will run this action
-        self.key = key
+        super().__init__(desc, key)
 
         # the player to run this action on
         self.player: Player = player

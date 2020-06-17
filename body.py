@@ -86,6 +86,21 @@ class Body:
             self.game.add_log(self.owner.str_possessive + ' ' + partname + ' has flown off !')
             self.remove_part(bodypart)
 
+    def get_equippable_parts(self) -> typing.List[BodyPart]:
+        """Get all body parts that can hold an item."""
+
+        return [part for part in self.parts.values()
+                if part.can_hold_item]
+
+    def equip_item(self, part: BodyPart, item: 'Item') -> bool:
+        """Set an item to be held by a body part."""
+
+        if part.can_hold_item:
+            part.held_item = item
+            return True
+        else:
+            return False
+
     def get_targetable_parts(self):
         """Get all body parts that can be targeted e.g. not missing."""
 
@@ -145,10 +160,10 @@ class HumanoidBody(Body):
         ], is_vital=True, weight=100))
 
         self.add_part(BodyPart("left_arm", ["left_hand"], ["chest"], weight=20))
-        self.add_part(BodyPart("left_hand", [], ["left_arm"], weight=5))
+        self.add_part(BodyPart("left_hand", [], ["left_arm"], weight=5, can_hold_item=True))
 
         self.add_part(BodyPart("right_arm", ["right_hand"], ["chest"], weight=20))
-        self.add_part(BodyPart("right_hand", [], ["right_arm"], weight=5))
+        self.add_part(BodyPart("right_hand", [], ["right_arm"], weight=5, can_hold_item=True))
 
         self.add_part(BodyPart("left_leg", ["left_foot"], ["chest"], weight=20))
         self.add_part(BodyPart("left_foot", [], ["left_leg"], weight=5))

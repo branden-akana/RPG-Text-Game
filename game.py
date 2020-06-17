@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from vector import vec2
 from player import Player
 
+Action = actions.Action
+
 
 @dataclass
 class Message():
@@ -40,6 +42,13 @@ class Game():
         self.player: Player = Player(self)
 
         self.player.pos = vec2(2, 4)
+
+        # the state of the action menu
+        # tells the game what actions to display
+        self.menu_state = 'main'
+
+        # holds an item previously selected through the menu
+        self.menu_selected_item = None
 
         # update the current room
         self.update_room()
@@ -102,16 +111,42 @@ class Game():
 
         action_list = []
 
-        # get movement actions
-        action_list += self.get_movement_actions()  # get movement actions
+        if self.menu_state == 'main':
 
-        # get room actions
-        if self.room:
-            action_list += self.room.get_actions(self.player)  # get room actions
+            # get movement actions
+            action_list += self.get_movement_actions()  # get movement actions
 
-        # debug actions
-        action_list.append(actions.CheckBodyAction(self.player))
-        action_list.append(actions.CheckInventory(self.player))
+            # get room actions
+            if self.room:
+                action_list += self.room.get_actions(self.player)  # get room actions
+
+            # debug actions
+            action_list.append(actions.CheckBodyAction(self.player))
+            action_list.append(actions.CheckInventory(self.player))
+
+            @Action.register(action_list, 'e', 'equip an item')
+            def _equip():
+                self.menu_state = 'equip_item'
+
+        elif self.menu_state == 'equip_item':
+
+            for i, item in enumerate(list(self.player.inventory.keys())):
+
+                @Action.register(action_list, str(i+1), f'select {item.name}')
+                def _select_item(item=item):
+                    self.menu_selected_item = item
+                    self.menu_state = 'equip_part'
+
+        elif self.menu_state == 'equip_part':
+
+            for i, part in enumerate(self.player.body.get_equippable_parts()):
+
+                @Action.register(action_list, str(i+1), f'select {part.name}')
+                def _action(part=part):
+                    item = self.menu_selected_item
+                    self.add_log(f'your {part.name} is now holding {item.name}')
+                    self.menu_selected_item = None
+                    self.menu_state = 'main'
 
         return action_list
 
