@@ -80,7 +80,7 @@ def parse_world(game, filename='resources/map.txt') -> World:
 
             if room_type:
                 print(f'\tsetting loc {x, y} to {room_type.__name__}')
-                world.set_room_at(vec2(x, y), room_type())
+                world.set_room_at(vec2(x, y), room_type(game))
 
             x += 1
 

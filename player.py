@@ -21,7 +21,7 @@ class Player(LivingEntity, InventoryHolder):
 
         self.game = game
 
-        self.give_item(items.Gold(15), items.Rock())
+        self.give_item(items.Gold(game, 15), items.Rock(game))
 
         # slots
         self.item_slots = {}

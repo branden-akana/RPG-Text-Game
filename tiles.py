@@ -10,12 +10,13 @@ from vector import vec2, Direction
 
 if typing.TYPE_CHECKING:
     from player import Player
+    from game import Game
 
 
 class Room:
-    def __init__(self):
+    def __init__(self, game: 'Game'):
 
-        self.game = None
+        self.game: 'Game' = game
 
         # a list of entities in this room
         self.entities = []
@@ -48,6 +49,10 @@ class Room:
 
 
 class StartingRoom(Room):
+
+    def __init__(self, game: 'Game'):
+        Room.__init__(self, game)
+
     def intro_text(self):
         return """
         You find yourself in a cave with a flickering torch on the wall.
@@ -61,9 +66,9 @@ class StartingRoom(Room):
 
 class LootRoom(Room):
 
-    def __init__(self, item):
+    def __init__(self, game: 'Game', item):
 
-        super().__init__()
+        Room.__init__(self, game)
 
         self.entities.append(item)
         self.item = item
@@ -77,9 +82,9 @@ class LootRoom(Room):
 
 class EnemyRoom(Room):
 
-    def __init__(self, enemy):
+    def __init__(self, game: 'Game', enemy):
 
-        super().__init__()
+        Room.__init__(self, game)
 
         self.entities.append(enemy)
         self.enemy = enemy
@@ -101,6 +106,10 @@ class EnemyRoom(Room):
 
 
 class EmptyCavePath(Room):
+
+    def __init__(self, game: 'Game'):
+        Room.__init__(self, game)
+
     def intro_text(self):
         return """
         Another unremarkable part of the cave. You must forge onwards.
@@ -112,8 +121,9 @@ class EmptyCavePath(Room):
 
 
 class GiantSpiderRoom(EnemyRoom):
-    def __init__(self):
-        super().__init__(enemies.GiantSpider())
+
+    def __init__(self, game: 'Game'):
+        EnemyRoom.__init__(self, game, enemies.GiantSpider())
 
     def intro_text(self):
         if self.enemy.is_alive():
@@ -127,8 +137,8 @@ class GiantSpiderRoom(EnemyRoom):
 
 
 class OgreRoom(EnemyRoom):
-    def __init__(self):
-        super().__init__(enemies.Ogre())
+    def __init__(self, game):
+        super().__init__(game, enemies.Ogre())
 
     def intro_text(self):
         if self.enemy.is_alive():
@@ -142,8 +152,8 @@ class OgreRoom(EnemyRoom):
 
 
 class FindGoldRoom(LootRoom):
-    def __init__(self):
-        super().__init__(items.Gold(10))
+    def __init__(self, game):
+        super().__init__(game, items.Gold(game, 10))
 
     def intro_text(self):
         return """
@@ -153,8 +163,8 @@ class FindGoldRoom(LootRoom):
 
 
 class FindDaggerRoom(LootRoom):
-    def __init__(self):
-        super().__init__(items.Dagger())
+    def __init__(self, game):
+        super().__init__(game, items.Dagger(game))
 
     def intro_text(self):
         return """
