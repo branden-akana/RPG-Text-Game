@@ -93,15 +93,6 @@ class MoveLeft(PlayerAction):
         self.player.move_left()
 
 
-class ViewInventory(PlayerAction):
-    """Prints the player's inventory"""
-    def __init__(self, player):
-        super().__init__(player, 'i', 'View inventory')
-
-    def do_action(self):
-        self.player.print_inventory()
-
-
 class Attack(PlayerAction):
 
     def __init__(self, player: Player, enemy):
@@ -119,6 +110,17 @@ class Flee(PlayerAction):
 
     def do_action(self):
         self.player.flee()
+
+
+class CheckInventory(PlayerAction):
+    """Prints the player's inventory"""
+    def __init__(self, player):
+        super().__init__(player, 'i', 'View inventory')
+
+    def do_action(self):
+
+        desc = self.player.describe_inventory()
+        self.player.game.add_log(desc)
 
 
 class CheckBodyAction(PlayerAction):

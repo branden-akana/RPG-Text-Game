@@ -107,6 +107,7 @@ class Game():
 
         # debug actions
         action_list.append(actions.CheckBodyAction(self.player))
+        action_list.append(actions.CheckInventory(self.player))
 
         return action_list
 

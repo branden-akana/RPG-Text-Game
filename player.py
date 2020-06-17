@@ -4,11 +4,14 @@ import random
 import body
 
 from vector import vec2
+from inventory import InventoryHolder
 
 
-class Player():
+class Player(InventoryHolder):
 
     def __init__(self, game):
+
+        InventoryHolder.__init__(self)
 
         # the position of the player
         self.pos = vec2(0, 0)
@@ -20,7 +23,7 @@ class Player():
 
         self.game = game
 
-        self.inventory = [items.Gold(15), items.Rock()]
+        self.give_item(items.Gold(15), items.Rock())
 
         # slots
         self.item_slots = {}
