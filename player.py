@@ -1,30 +1,55 @@
 #!/usr/bin/python3 env
 import items
-import world
 import random
+import body
+
+from vector import vec2
 
 
 class Player():
+
     def __init__(self, game):
 
-        self.inventory = [items.Gold(15), items.Rock()]
-        self.hp = 100
-        self.location_x, self.location_y = world.starting_position
+        # the position of the player
+        self.pos = vec2(0, 0)
+
+        # the body of the player
+        self.body = body.HumanoidBody(game, self)
+
         self.victory = False
 
         self.game = game
 
-    def is_alive(self):
-        return self.hp > 0
+        self.inventory = [items.Gold(15), items.Rock()]
+
+        # slots
+        self.item_slots = {}
+
+        # strings
+        # -------
+
+        self.str_possessive = "Your"
+
+        self.str_name = "You"
+
+    def hurt(self, damage):
+        return self.body.hurt(damage)
+
+    def get_health(self) -> int:
+        return self.body.health
+
+    def is_alive(self) -> int:
+        return self.body.is_alive
 
     def print_inventory(self):
-        for item in self.inventory:
-            self.game.send_log_message(item, '\n')
+        line = '\n'.join([str(item) for item in self.inventory])
+        self.game.add_log(line)
 
     def move(self, dx, dy):
-        self.location_x += dx
-        self.location_y += dy
-        self.game.send_log_message(world.tile_exists(self.location_x, self.location_y).intro_text())
+
+        self.pos += (dx, dy)
+
+        # self.game.add_log(world.tile_exists(self.pos).intro_text())
 
     def move_up(self):
         self.move(dx=0, dy=-1)
@@ -47,21 +72,25 @@ class Player():
                     max_damage = item.damage
                     best_weapon = item
 
-        self.game.send_log_message('You use {} against {}!'.format(best_weapon.name, enemy.name))
+        self.game.add_log('You use {} against {}!'.format(best_weapon.name, enemy.name))
         enemy.hp -= best_weapon.damage
         if not enemy.is_alive():
-            self.game.send_log_message('You killed a {}!'.format(enemy.name))
+            self.game.add_log('You killed a {}!'.format(enemy.name))
         else:
-            self.game.send_log_message('{} HP is {}.'.format(enemy.name, enemy.hp))
+            self.game.add_log('{} HP is {}.'.format(enemy.name, enemy.hp))
 
     def do_action(self, action, **kwargs):
         action_method = getattr(self, action.method.__name__)
         if action_method:
             action_method(**kwargs)
 
-    def flee(self, tile):
+    def flee(self):
         """Moves the player randomly to an adjacent tile"""
-        available_moves = tile.adjacent_moves()
+
+        available_moves = self.game.get_movement_actions()
         print(f"av moves: { available_moves }")
         random_room = random.randint(0, len(available_moves) - 1)
+
+        self.game.add_log('You have fled to another room')
+
         self.do_action(available_moves[random_room])

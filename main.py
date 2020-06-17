@@ -41,8 +41,7 @@ def on_render(scr: CursesScreen, key: str):
         "Last Keypress: " + str(key)
     ))
 
-
-    desc = re.sub(' +', ' ', game.status)
+    desc = re.sub(' +', ' ', game.get_description())
 
     scr.draw_text(21, 5, '\n'.join(textwrap.wrap(desc, width-21)))
     scr.draw_text(21, 9, actions.format_actions(game.get_actions()))

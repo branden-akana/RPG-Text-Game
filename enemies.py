@@ -2,6 +2,7 @@
 
 
 class Enemy:
+
     def __init__(self, name, hp, damage):
         self.name = name
         self.hp = hp
@@ -9,6 +10,12 @@ class Enemy:
 
     def is_alive(self):
         return self.hp > 0
+
+    def hurt(self, damage):
+        self.hp -= damage
+
+    def get_health(self):
+        return self.hp
 
 
 class GiantSpider(Enemy):
