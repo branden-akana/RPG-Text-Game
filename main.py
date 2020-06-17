@@ -27,6 +27,10 @@ def on_init(scr: CursesScreen):
 @scr.render
 def on_render(scr: CursesScreen, key: str):
 
+    if game.quit:
+        scr.end()
+        return
+
     global map_view
 
     game.send_key_press(key)
@@ -55,6 +59,10 @@ def on_render(scr: CursesScreen, key: str):
     # draw health
     scr.draw_text(0, height-1, 'Health: ' + str(game.player.get_health()),
                   fg=0, bg=9)
+
+    # draw command buffer
+    if game.menu_state == 'cmd':
+        scr.draw_text(12, height-1, ':' + game.menu_cmd_buffer, 'standout')
 
     scr.set_view(map_view)
 

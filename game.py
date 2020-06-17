@@ -8,7 +8,8 @@ from dataclasses import dataclass
 from vector import vec2
 from player import Player
 
-Action = actions.Action
+QuickAction = actions.QuickAction
+CommandAction = actions.CommandAction
 
 
 @dataclass
@@ -50,12 +51,18 @@ class Game():
         # holds an item previously selected through the menu
         self.menu_selected_item = None
 
+        # holds the command string that is being typed by the user
+        self.menu_cmd_buffer = ''
+
+        # if true, try to quit the game
+        self.quit = False
+
         # update the current room
-        self.update_room()
+        self.set_current_room()
 
         print('loaded a new game')
 
-    def update_room(self):
+    def set_current_room(self):
 
         # self.add_log(f'retrieving room @ { self.player.pos }', 8)
         # get the tile at the current position
@@ -89,17 +96,58 @@ class Game():
 
     def update(self):
 
-        self.do_tick()
+        if self.menu_state == 'cmd':
+            key = self.next_key_press
+            # add the last pressed key to the cmd buffer
+            if key == 'KEY_BACKSPACE':
+                # remove last character
+                self.menu_cmd_buffer = self.menu_cmd_buffer[:-1]
+            elif key == '\n':
+                # TODO: run a command
+                self.add_log('running command: ' + self.menu_cmd_buffer)
+                self.run_command(self.menu_cmd_buffer)
+                self.menu_cmd_buffer = ''
+                self.menu_state = 'main'
+            else:
+                self.menu_cmd_buffer += self.next_key_press
 
-        if self.player.is_alive() and not self.player.victory:
+        elif self.next_key_press == ':':
+            # set the menu to cmd mode
+            self.menu_state = 'cmd'
 
+        elif self.player.is_alive() and not self.player.victory:
             # check to do any actions
             for action in self.get_actions():
                 if self.next_key_press == action.key:
                     action.do_action()
+                    self.do_tick()
+                    self.set_current_room()
                     break
 
-            self.update_room()
+    def get_commands(self) -> list:
+        """Get all commands that the player can do."""
+
+        commands = []
+
+        @CommandAction.register(commands, ['help'], 'get a list of commands')
+        def _cmd_help(*args):
+            self.add_log('There is no help.')
+
+        @CommandAction.register(commands, ['quit'], 'quit the game')
+        def _cmd_quit(*args):
+            self.quit = True
+
+        return commands
+
+    def run_command(self, cmd: str):
+
+        args = cmd.split(' ')
+        root = args[0]
+        args = args[1:]
+
+        for command in self.get_commands():
+            if root in command.terms:
+                command.do_command(args)
 
     def get_movement_actions(self) -> list:
         """Get all movement actions that the player can do."""
@@ -124,7 +172,7 @@ class Game():
             action_list.append(actions.CheckBodyAction(self.player))
             action_list.append(actions.CheckInventory(self.player))
 
-            @Action.register(action_list, 'e', 'equip an item')
+            @QuickAction.register(action_list, 'e', 'equip an item')
             def _equip():
                 self.menu_state = 'equip_item'
 
@@ -132,7 +180,7 @@ class Game():
 
             for i, item in enumerate(list(self.player.inventory.keys())):
 
-                @Action.register(action_list, str(i+1), f'select {item.name}')
+                @QuickAction.register(action_list, str(i+1), f'select {item.name}')
                 def _select_item(item=item):
                     self.menu_selected_item = item
                     self.menu_state = 'equip_part'
@@ -141,7 +189,7 @@ class Game():
 
             for i, part in enumerate(self.player.body.get_equippable_parts()):
 
-                @Action.register(action_list, str(i+1), f'select {part.name}')
+                @QuickAction.register(action_list, str(i+1), f'select {part.name}')
                 def _action(part=part):
                     item = self.menu_selected_item
                     self.add_log(f'your {part.name} is now holding {item.name}')

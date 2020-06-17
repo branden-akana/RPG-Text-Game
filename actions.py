@@ -33,17 +33,25 @@ def format_vector(vec: vec2) -> str:
 class Action():
     """An action that can be taken."""
 
-    def __init__(self, desc: str, key: str):
-
+    def __init__(self, desc: str):
         # the description of this action
         self.desc = desc or "unknown action"
-
-        # the hotkey that will run this action
-        self.key = key
 
     def do_action(self):
         """Run the action."""
         pass
+
+
+
+class QuickAction(Action):
+    """An action that is bound to a hotkey."""
+
+    def __init__(self, key: str, desc: str):
+        Action.__init__(self, desc)
+
+        # the hotkey that will run this action
+        self.key = key
+
 
     @staticmethod
     def register(actions: list, key: str, desc: str = 'a custom action'):
@@ -52,12 +60,47 @@ class Action():
         def register_inner(func):
 
             # define a custom class that runs the wrapped fn
-            class CustomAction(Action):
+            class CustomAction(QuickAction):
                 def __init__(self):
-                    Action.__init__(self, desc, key)
+                    QuickAction.__init__(self, key, desc)
 
                 def do_action(self):
                     func()
+
+            # add an instance of this class to our list of actions
+            actions.append(CustomAction())
+
+            return func
+        return register_inner
+
+class CommandAction(Action):
+    """An action that is bound to a command."""
+
+    def __init__(self, terms: list, desc: str):
+        Action.__init__(self, desc)
+
+        # the list of command terms that will run this action
+        self.terms = terms
+
+    def do_command(self, *args):
+        pass
+
+    def do_action(self):
+        self.do_command()
+
+    @staticmethod
+    def register(actions: list, terms: list, desc: str = 'a custom action'):
+        """Decorator that creates an Action and adds it to a list."""
+
+        def register_inner(func):
+
+            # define a custom class that runs the wrapped fn
+            class CustomAction(CommandAction):
+                def __init__(self):
+                    CommandAction.__init__(self, terms, desc)
+
+                def do_command(self, *args):
+                    func(*args)
 
             # add an instance of this class to our list of actions
             actions.append(CustomAction())
@@ -71,7 +114,9 @@ class PlayerAction(Action):
 
     def __init__(self, player: Player, key: str, desc: str = None):
 
-        super().__init__(desc, key)
+        super().__init__(desc)
+
+        self.key = key
 
         # the player to run this action on
         self.player: Player = player
