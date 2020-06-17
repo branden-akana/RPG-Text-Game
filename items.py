@@ -15,9 +15,6 @@ class Item(Entity):
         # the price of this item (per item)
         self.value = value
 
-        # the amount of this item (stacking)
-        self.amount = amount
-
     def __str__(self):
         return "{}\n=====\n{}\nValue: {}\n".format(
                 self.name, self.description, self.amount
@@ -28,7 +25,7 @@ class Gold(Item):
     def __init__(self, game, value):
         super().__init__(
             game,
-            name="Gold",
+            name=f"{value} Gold",
             description="A round coin with {} stamped on the front.".format(
                     str(value)
                 ),

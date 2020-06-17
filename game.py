@@ -48,15 +48,17 @@ class Game():
 
     def update_room(self):
 
-        self.add_log(f'retrieving room @ { self.player.pos }', 8)
-
+        # self.add_log(f'retrieving room @ { self.player.pos }', 8)
         # get the tile at the current position
         self.room = self.world.get_room_at(self.player.pos)
 
+        # TODO: Room.intro_text() is deprecated
+
+    def do_tick(self):
+        """Calculate one unit of time."""
+
         if self.room:
             self.room.modify_player(self.player)
-
-        # TODO: Room.intro_text() is deprecated
 
     def add_log(self, msg, fg=15, bg=0, style='normal'):
 
@@ -77,6 +79,8 @@ class Game():
         return self.world.get_room_at(vec2(x, y))
 
     def update(self):
+
+        self.do_tick()
 
         if self.player.is_alive() and not self.player.victory:
 

@@ -18,6 +18,16 @@ class Entity:
         # the name of the entity
         self.name = name
 
+    def __eq__(self, o):
+
+        if type(self) == type(o):
+            return self.name == o.name
+        else:
+            return self == o
+
+    def __hash__(self):
+        return hash(self.name)
+
 
 class LivingEntity(Entity):
     """Represents an entity that has a body and is able to die."""

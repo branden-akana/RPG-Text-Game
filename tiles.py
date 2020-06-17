@@ -71,10 +71,11 @@ class LootRoom(Room):
         Room.__init__(self, game)
 
         self.entities.append(item)
-        self.item = item
 
     def add_loot(self, player: 'Player'):
-        player.give_item(self.item)
+        for item in [ent for ent in self.entities if isinstance(ent, items.Item)]:
+            player.give_item(item)
+            self.entities.remove(item)
 
     def modify_player(self, player):
         self.add_loot(player)

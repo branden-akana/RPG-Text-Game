@@ -16,18 +16,23 @@ class InventoryHolder(Entity):
 
         self.game: 'Game' = game
 
-        # the list of items in this inventory
-        self.inventory = []
+        # a dict of inventory items and stack amount
+        self.inventory = {}
 
     def has_item(self, name: str):
         """Return if this inventory has an item (by name)."""
 
-        return any([item.name == name for item in self.inventory])
+        return any([item.name == name for item in list(self.inventory.keys())])
 
     def give_item(self, *items):
         """Add items to this inventory."""
 
-        self.inventory += items
+        for item in items:
+            if self.inventory.get(item):
+                self.inventory[item] += 1  # increment the stack
+            else:
+                self.inventory[item] = 1  # initialize the stack to 1
+
         item_str = ', '.join([item.name for item in items])
         self.game.add_log(f'{self.name} picked up {item_str}')
 
@@ -51,7 +56,7 @@ class InventoryHolder(Entity):
 
         lines = ["Inventory:"]
 
-        for item in self.inventory:
-            lines += [f"- {item.name}"]
+        for item, amount in self.inventory.items():
+            lines += [f"- {item.name} ({amount})"]
 
         return '\n'.join(lines)
