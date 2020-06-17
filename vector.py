@@ -42,12 +42,24 @@ class vec2():
         else:
             return self == o
 
+    def __truediv__(self, o) -> 'vec2':
+
+        if type(o) is vec2:
+            return vec2(self.x / o.x, self.y / o.y)
+        else:
+            return vec2(self.x / o, self.y / o)
+
+    def __floordiv__(self, o) -> 'vec2':
+
+        if type(o) is vec2:
+            return vec2(self.x // o.x, self.y // o.y)
+        else:
+            return vec2(self.x // o, self.y // o)
 
     def __iter__(self):
 
         yield self.x
         yield self.y
-
 
     def __hash__(self):
 
