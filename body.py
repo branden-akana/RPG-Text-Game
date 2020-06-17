@@ -1,39 +1,53 @@
 
 import random
+import typing
+
+from dataclasses import dataclass, field
 
 
+if typing.TYPE_CHECKING:
+    from items import Item
+
+
+@dataclass
 class BodyPart:
 
-    def __init__(
-            self,
-            name: str,
-            attachments: list,
-            main_attachments: list = [], *,
-            is_vital: bool = False,
-            weight: float = 100,
-    ):
+    # the name of the part
+    name: str
 
-        # the name of the part
-        self.name = name
+    # a list of parts (by name) that this part is attached to.
+    # if this part is deattached, then these parts will be too.
+    attachments: list = field(default_factory=lambda: [])
 
-        # a list of parts (by name) that this part is attached to.
-        # if this part is deattached, then these parts will be too.
-        self.attachments = attachments
+    # a list of greater attachments that this part is attached to.
+    # if any part in this list is deattached, then this part will be
+    # deattached.
+    main_attachments: list = field(default_factory=lambda: [])
 
-        # a list of greater attachments that this part is attached to.
-        # if any part in this list is deattached, then this part will be
-        # deattached.
-        self.main_attachments = main_attachments
+    # the status of the body part
+    status: str = 'healthy'
 
-        # if true, will kill the entity instantly if disattached
-        self.is_vital = is_vital
+    # the weight used in probability checks.
+    # the lower the number, the less likely this body part will get
+    # targeted
+    weight: float = 100
 
-        # the status of the body part
-        self.status: str = 'healthy'
+    # if true, will kill the entity instantly if disattached
+    is_vital: bool = False
 
-        self.prob_weight: float = weight
+    # can this part hold an item?
+    can_hold_item: bool = False
 
-        # TODO: per-part health
+    # can this part be used to attack? (unarmed)
+    can_attack_bare: bool = False
+
+    # can this part attack with a weapon?
+    can_attack_armed: bool = False
+
+    # the item this part is holding (if can_hold_item)
+    held_item: 'typing.Optional[Item]' = None
+
+    # TODO: per-part health
 
 
 class Body:
@@ -86,7 +100,7 @@ class Body:
         """
 
         parts = self.get_targetable_parts()
-        weights = [part.prob_weight for part in parts]
+        weights = [part.weight for part in parts]
 
         if len(parts) == 0:
             return None
