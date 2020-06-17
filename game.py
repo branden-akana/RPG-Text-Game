@@ -21,9 +21,6 @@ class Game():
 
     def __init__(self):
 
-        # the current Player instance
-        self.player: Player = Player(self)
-
         # a string describing the current situation
         self.status = ''
 
@@ -38,6 +35,9 @@ class Game():
 
         # load the world
         self.world = world.parse_world(self)
+
+        # the current Player instance
+        self.player: Player = Player(self)
 
         self.player.pos = vec2(2, 4)
 

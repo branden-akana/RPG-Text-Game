@@ -1,9 +1,20 @@
 
+import typing
+from entity import Entity
 
-class InventoryHolder:
+
+if typing.TYPE_CHECKING:
+    from game import Game
+
+
+class InventoryHolder(Entity):
     """An object that can hold an inventory."""
 
-    def __init__(self):
+    def __init__(self, game: 'Game'):
+
+        Entity.__init__(self, game, 'Unnamed Inventory')
+
+        self.game: 'Game' = game
 
         # the list of items in this inventory
         self.inventory = []
@@ -17,6 +28,8 @@ class InventoryHolder:
         """Add items to this inventory."""
 
         self.inventory += items
+        item_str = ', '.join([item.name for item in items])
+        self.game.add_log(f'{self.name} picked up {item_str}')
 
     def remove_item(self, name: str):
         """Remove an item from this inventory.

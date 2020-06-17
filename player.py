@@ -1,23 +1,21 @@
 #!/usr/bin/python3 env
 import items
 import random
-import body
 
 from vector import vec2
+from entity import LivingEntity
 from inventory import InventoryHolder
 
 
-class Player(InventoryHolder):
+class Player(LivingEntity, InventoryHolder):
 
     def __init__(self, game):
 
-        InventoryHolder.__init__(self)
+        InventoryHolder.__init__(self, game)
+        LivingEntity.__init__(self, game, name='You')
 
         # the position of the player
         self.pos = vec2(0, 0)
-
-        # the body of the player
-        self.body = body.HumanoidBody(game, self)
 
         self.victory = False
 
@@ -35,21 +33,7 @@ class Player(InventoryHolder):
 
         self.str_name = "You"
 
-    def hurt(self, damage):
-        return self.body.hurt(damage)
-
-    def get_health(self) -> int:
-        return self.body.health
-
-    def is_alive(self) -> int:
-        return self.body.is_alive
-
-    def print_inventory(self):
-        line = '\n'.join([str(item) for item in self.inventory])
-        self.game.add_log(line)
-
     def move(self, dx, dy):
-
         self.pos += (dx, dy)
 
         # self.game.add_log(world.tile_exists(self.pos).intro_text())

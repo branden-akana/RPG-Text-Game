@@ -1,10 +1,15 @@
 #!/usr/bin/python3 env
+import typing
 import items
 import enemies
 import actions
 
 from entity import LivingEntity
 from vector import vec2, Direction
+
+
+if typing.TYPE_CHECKING:
+    from player import Player
 
 
 class Room:
@@ -63,8 +68,8 @@ class LootRoom(Room):
         self.entities.append(item)
         self.item = item
 
-    def add_loot(self, player):
-        player.inventory.append(self.item)
+    def add_loot(self, player: 'Player'):
+        player.give_item(self.item)
 
     def modify_player(self, player):
         self.add_loot(player)
