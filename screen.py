@@ -23,6 +23,8 @@ class CursesScreen:
         # if false, stop the render loop
         self.running = True
 
+        self.fps = 0.0
+
         # called on every frame
         self.on_render = lambda *args: None
 
@@ -170,13 +172,16 @@ class CursesScreen:
                 for view in self.views:
                     view.refresh()
 
-                # framerate limiter
-
                 ftime = time.time()
+
+                # framerate limiter
                 if (ftime - last_ftime) < frate:
                     time.sleep(frate - (ftime - last_ftime))
+                ftime = time.time()
 
-                last_ftime = time.time()
+                self.fps = 1.0 / (ftime - last_ftime)
+
+                last_ftime = ftime
 
                 # read input (blocks)
                 # key = self.read_input()
