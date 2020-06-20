@@ -1,0 +1,5 @@
+
+[run]
+command=termite --hold -e "bash -lic \"python main.py\""
+cwd=.
+output=terminal
