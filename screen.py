@@ -1,6 +1,7 @@
 
 import curses
 import traceback
+import time
 
 
 class CursesScreen:
@@ -19,11 +20,17 @@ class CursesScreen:
         # a map of colors
         self.colors = {}
 
+        # if false, stop the render loop
+        self.running = True
+
         # called on every frame
-        self.on_render = lambda: None
+        self.on_render = lambda *args: None
 
         # called before the render loop starts
-        self.on_init = lambda: None
+        self.on_init = lambda *args: None
+
+        # called when a key is pressed
+        self.on_key_pressed = lambda *args: None
 
     def render(self, func):
         """Set the function used to render a frame."""
@@ -33,6 +40,11 @@ class CursesScreen:
     def init(self, func):
         """Set the method called before the render loop."""
         self.on_init = func
+        return func
+
+    def key_pressed(self, func):
+        """Set the method called before the render loop."""
+        self.on_key_pressed = func
         return func
 
     def set_view(self, view=None) -> None:
@@ -49,11 +61,15 @@ class CursesScreen:
     def read_input(self) -> str:
         """Read input from the user.
 
-        This method will wait until the user presses a key. The string
-        representation of that key will be returned.
+        If the user has pressed a key, the string representation of that key
+        will be returned.
+        If not, then an empty string will be returned.
         """
 
-        return self.stdscr.getkey()
+        try:
+            return self.stdscr.getkey()
+        except Exception:
+            return ''
 
     def create_view(self, x, y, width, height):
         """Create a new view."""
@@ -92,6 +108,7 @@ class CursesScreen:
         self.stdscr = curses.initscr()
         curses.noecho()
         curses.cbreak()
+        self.stdscr.nodelay(True)
         self.stdscr.keypad(True)
 
         # initialize colors (16 colors)
@@ -116,12 +133,21 @@ class CursesScreen:
         key = None
         set_view = self.set_view
 
-        while True:
+        frate = (1.0 / 60.0)
+        last_ftime = time.time()
+
+        while self.running:
 
             try:
+
+                key = self.read_input()
+
                 if key == "Q":  # debug quit key
                     self.end()
                     break
+
+                elif key != '':
+                    self.on_key_pressed(self, key)
 
                 # clear screen
                 # ------------
@@ -144,7 +170,16 @@ class CursesScreen:
                 for view in self.views:
                     view.refresh()
 
-                key = self.stdscr.getkey()
+                # framerate limiter
+
+                ftime = time.time()
+                if (ftime - last_ftime) < frate:
+                    time.sleep(frate - (ftime - last_ftime))
+
+                last_ftime = time.time()
+
+                # read input (blocks)
+                # key = self.read_input()
 
             except Exception:
 
@@ -181,6 +216,7 @@ class CursesScreen:
         self.view.box()
 
     def end(self):
+        self.running = False
         # shut down terminal
         curses.nocbreak()
         self.stdscr.keypad(False)
