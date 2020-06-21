@@ -1,11 +1,16 @@
 
 import random
-import typing
 
 from dataclasses import dataclass, field
+from typing import (
+    TYPE_CHECKING,
+    Optional,
+    List,
+    Dict
+)
 
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from items import Item
 
 
@@ -45,7 +50,7 @@ class BodyPart:
     can_attack_armed: bool = False
 
     # the item this part is holding (if can_hold_item)
-    held_item: 'typing.Optional[Item]' = None
+    held_item: 'Optional[Item]' = None
 
     # TODO: per-part health
 
@@ -61,13 +66,14 @@ class Body:
         # the entity that this body belongs to
         self.owner = ent
 
-        self.parts = {}
+        self.parts: Dict[str, BodyPart] = {}
 
         self.max_health = 100
 
         self.health = self.max_health
 
-        self.is_alive = True
+    def is_alive(self) -> bool:
+        return self.health > 0
 
     def get_health_perc(self):
         """Get the health of the body as a percentage."""
@@ -83,10 +89,10 @@ class Body:
         bodypart = self.parts.get(partname)
         if bodypart:
 
-            self.game.add_log(self.owner.str_possessive + ' ' + partname + ' has flown off !')
+            self.game.log(self.owner.str_possessive + ' ' + partname + ' has flown off !')
             self.remove_part(bodypart)
 
-    def get_equippable_parts(self) -> typing.List[BodyPart]:
+    def get_equippable_parts(self) -> List[BodyPart]:
         """Get all body parts that can hold an item."""
 
         return [part for part in self.parts.values()
@@ -139,7 +145,7 @@ class Body:
         bodypart = bodypart or self.pick_part()
 
         if bodypart is None:
-            self.game.add_log('No body part to target!')
+            self.game.log('No body part to target!')
 
         else:
             # self.deattach_part(bodypart.name)
@@ -160,10 +166,14 @@ class HumanoidBody(Body):
         ], is_vital=True, weight=100))
 
         self.add_part(BodyPart("left_arm", ["left_hand"], ["chest"], weight=20))
-        self.add_part(BodyPart("left_hand", [], ["left_arm"], weight=5, can_hold_item=True))
+        self.add_part(BodyPart("left_hand", [], ["left_arm"], weight=5,
+            can_attack_armed=True, can_attack_bare=True, can_hold_item=True
+        ))
 
         self.add_part(BodyPart("right_arm", ["right_hand"], ["chest"], weight=20))
-        self.add_part(BodyPart("right_hand", [], ["right_arm"], weight=5, can_hold_item=True))
+        self.add_part(BodyPart("right_hand", [], ["right_arm"], weight=5,
+            can_attack_armed=True, can_attack_bare=True, can_hold_item=True
+        ))
 
         self.add_part(BodyPart("left_leg", ["left_foot"], ["chest"], weight=20))
         self.add_part(BodyPart("left_foot", [], ["left_leg"], weight=5))

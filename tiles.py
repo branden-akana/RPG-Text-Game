@@ -95,13 +95,14 @@ class EnemyRoom(Room):
         if self.enemy.is_alive():
             # TODO: put into an Enemy.attack method
             part = the_player.hurt(self.enemy.damage)
-            self.game.add_log(f'An enemy hits your { part.name } and '
+            self.game.log(f'An enemy hits your { part.name } and '
                               f'does { self.enemy.damage } !')
 
     def get_actions(self, ent: LivingEntity):
 
         if self.enemy.is_alive():
-            return [actions.Flee(ent), actions.Attack(ent, enemy=self.enemy)]
+            # return [actions.Flee(ent), actions.Attack(ent, enemy=self.enemy)]
+            return [actions.Flee(ent)]
         else:
             return []
 
@@ -124,7 +125,7 @@ class EmptyCavePath(Room):
 class GiantSpiderRoom(EnemyRoom):
 
     def __init__(self, game: 'Game'):
-        EnemyRoom.__init__(self, game, enemies.GiantSpider())
+        EnemyRoom.__init__(self, game, enemies.GiantSpider(game))
 
     def intro_text(self):
         if self.enemy.is_alive():
@@ -139,7 +140,7 @@ class GiantSpiderRoom(EnemyRoom):
 
 class OgreRoom(EnemyRoom):
     def __init__(self, game):
-        super().__init__(game, enemies.Ogre())
+        super().__init__(game, enemies.Ogre(game))
 
     def intro_text(self):
         if self.enemy.is_alive():

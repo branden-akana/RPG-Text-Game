@@ -1,36 +1,32 @@
 #!/usr/bin/python3 env
 
+from entity import LivingEntity
 
-class Enemy:
 
-    def __init__(self, name, hp, damage):
-        self.name = name
-        self.hp = hp
+class Enemy(LivingEntity):
+
+    def __init__(self, game, name, damage):
+
+        super().__init__(game, name)
+
         self.damage = damage
 
-    def is_alive(self):
-        return self.hp > 0
-
-    def hurt(self, damage):
-        self.hp -= damage
-
-    def get_health(self):
-        return self.hp
+        #TODO: be able to set HP
 
 
 class GiantSpider(Enemy):
-    def __init__(self):
-        super().__init__(
+    def __init__(self, game):
+        super().__init__(game,
             name='Giant Spider',
-            hp=10,
+            # hp=10,
             damage=2
         )
 
 
 class Ogre(Enemy):
-    def __init__(self):
-        super().__init__(
+    def __init__(self, game):
+        super().__init__(game,
             name='Ogre',
-            hp=30,
+            # hp=30,
             damage=15
         )

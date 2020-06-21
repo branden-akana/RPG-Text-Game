@@ -15,6 +15,9 @@ class Item(Entity):
         # the price of this item (per item)
         self.value = value
 
+        # damage when attacking
+        self.damage = 1
+
     def __str__(self):
         return "{}\n=====\n{}\nValue: {}\n".format(
                 self.name, self.description, self.amount

@@ -34,7 +34,7 @@ class InventoryHolder(Entity):
                 self.inventory[item] = 1  # initialize the stack to 1
 
         item_str = ', '.join([item.name for item in items])
-        self.game.add_log(f'{self.name} picked up {item_str}')
+        self.game.log(f'{self.name} picked up {item_str}')
 
     def remove_item(self, name: str):
         """Remove an item from this inventory.

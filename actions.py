@@ -1,7 +1,13 @@
 #!/usr/bin/python3 env
 
-from player import Player
 from vector import vec2
+from typing import (
+    TYPE_CHECKING,
+    Callable
+)
+
+if TYPE_CHECKING:
+    from player import Player
 
 
 def format_actions(actions: list) -> str:
@@ -42,7 +48,6 @@ class Action():
         pass
 
 
-
 class QuickAction(Action):
     """An action that is bound to a hotkey."""
 
@@ -51,7 +56,6 @@ class QuickAction(Action):
 
         # the hotkey that will run this action
         self.key = key
-
 
     @staticmethod
     def register(actions: list, key: str, desc: str = 'a custom action'):
@@ -72,6 +76,7 @@ class QuickAction(Action):
 
             return func
         return register_inner
+
 
 class CommandAction(Action):
     """An action that is bound to a command."""
@@ -109,17 +114,49 @@ class CommandAction(Action):
         return register_inner
 
 
+def create_action(desc: str, fn: Callable, key: str = '', terms: list = []) -> Action:
+    """Create a new action."""
+    if key:
+        # make a quick action
+        class CustomAction(QuickAction):
+            def __init__(self):
+                super().__init__(key, desc)
+
+            def do_action(self):
+                fn()
+
+    elif terms:
+        # make a command action
+        class CustomAction(CommandAction):
+            def __init__(self):
+                super().__init__(terms, desc)
+
+            def do_command(self, *args):
+                fn(*args)
+
+    else:
+        # make a normal action
+        class CustomAction(Action):
+            def __init__(self):
+                super().__init__(desc)
+
+            def do_action(self):
+                fn()
+
+    return CustomAction()
+
+
 class PlayerAction(Action):
     """An action that is run on a player."""
 
-    def __init__(self, player: Player, key: str, desc: str = None):
+    def __init__(self, player: 'Player', key: str, desc: str):
 
         super().__init__(desc)
 
         self.key = key
 
         # the player to run this action on
-        self.player: Player = player
+        self.player = player
 
 
 class MoveUp(PlayerAction):
@@ -160,7 +197,7 @@ class MoveLeft(PlayerAction):
 
 class Attack(PlayerAction):
 
-    def __init__(self, player: Player, enemy):
+    def __init__(self, player: 'Player', enemy):
         super().__init__(player, 'k', 'Attack')
         self.enemy = enemy
 
@@ -170,7 +207,7 @@ class Attack(PlayerAction):
 
 class Flee(PlayerAction):
 
-    def __init__(self, player: Player):
+    def __init__(self, player: 'Player'):
         super().__init__(player, 'j', 'Flee!')
 
     def do_action(self):
@@ -185,7 +222,7 @@ class CheckInventory(PlayerAction):
     def do_action(self):
 
         desc = self.player.describe_inventory()
-        self.player.game.add_log(desc)
+        self.player.game.log(desc)
 
 
 class CheckBodyAction(PlayerAction):
@@ -199,4 +236,4 @@ class CheckBodyAction(PlayerAction):
         for part in self.player.body.parts.values():
             lines.append(f'{part.name} ({ part.status }) -> {part.attachments}')
 
-        self.player.game.add_log('\n'.join(lines))
+        self.player.game.log('\n'.join(lines))

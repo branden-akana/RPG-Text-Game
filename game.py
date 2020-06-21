@@ -2,39 +2,41 @@
 
 import world
 import actions
+import typing
 
 from tiles import Room
+from turns import TurnManager
 from dataclasses import dataclass
 from vector import vec2
 from player import Player
+from mixins.logger import Logger
 
 QuickAction = actions.QuickAction
 CommandAction = actions.CommandAction
 
 
-@dataclass
-class Message():
-    text: str
-    style: str = 'normal'
-    fg: int = 0
-    bg: int = 0
+if typing.TYPE_CHECKING:
+    from screen import CursesScreen
 
 
-class Game():
+class Game(Logger):
 
-    def __init__(self):
+    def __init__(self, scr: 'CursesScreen'):
+
+        Logger.__init__(self)
+
+        self.scr: 'CursesScreen' = scr
 
         # a string describing the current situation
         self.status = ''
 
         # the next key to read from the user
-        self.next_key_press = ""
+        self.input_key = ""
 
         # the current room the player is in
         self.room = None
 
-        # list of log messages
-        self.log = []
+        self.turns = None
 
         # load the world
         self.world = world.parse_world(self)
@@ -43,6 +45,11 @@ class Game():
         self.player: Player = Player(self)
 
         self.player.pos = vec2(2, 4)
+
+        # the state of the game
+        # 'input' -> game is waiting for player input
+        # 'running' -> time is progressing
+        self.game_state = 'input'
 
         # the state of the action menu
         # tells the game what actions to display
@@ -64,9 +71,11 @@ class Game():
 
     def set_current_room(self):
 
-        # self.add_log(f'retrieving room @ { self.player.pos }', 8)
+        # self.log(f'retrieving room @ { self.player.pos }', 8)
         # get the tile at the current position
         self.room = self.world.get_room_at(self.player.pos)
+        self.turns = TurnManager(self, self.room.entities + [self.player])
+        self.turns.start_order()
 
         # TODO: Room.intro_text() is deprecated
 
@@ -76,18 +85,39 @@ class Game():
         if self.room:
             self.room.modify_player(self.player)
 
-    def add_log(self, msg, fg=15, bg=0, style='normal'):
-
-        # insert to the front of the list
-        self.log.insert(0, Message(msg, style, fg, bg))
-        if len(self.log) > 10:
-            del self.log[10]
-
-    def send_key_press(self, key):
+    def on_key_pressed(self, key):
         """Set the next key to input and update the game."""
 
-        self.next_key_press = key
-        self.update()
+        if self.game_state != 'input': return  # noqa: E701
+
+        if self.menu_state == 'cmd':
+            # add the last pressed key to the cmd buffer
+            if key == 'KEY_BACKSPACE':
+                # remove last character
+                self.menu_cmd_buffer = self.menu_cmd_buffer[:-1]
+            elif key == '\n':
+                # TODO: run a command
+                # self.log('running command: ' + self.menu_cmd_buffer)
+                self.run_command(self.menu_cmd_buffer)
+                self.menu_cmd_buffer = ''
+                self.menu_state = 'main'
+            else:
+                self.menu_cmd_buffer += self.input_key
+
+        elif key == ':':
+            # set the menu to cmd mode
+            self.menu_state = 'cmd'
+
+        elif self.player.is_alive() and not self.player.victory:
+            # check to do any actions
+            for action in self.get_actions():
+                if key == action.key:
+                    action.do_action()
+                    self.set_current_room()
+                    # resume game
+                    self.game_state = 'running'
+                    # self.do_tick()
+                    break
 
     def get_room(self, x, y) -> str:
         """Get a room by its coordinates."""
@@ -95,34 +125,11 @@ class Game():
         return self.world.get_room_at(vec2(x, y))
 
     def update(self):
+        """Update the game."""
 
-        if self.menu_state == 'cmd':
-            key = self.next_key_press
-            # add the last pressed key to the cmd buffer
-            if key == 'KEY_BACKSPACE':
-                # remove last character
-                self.menu_cmd_buffer = self.menu_cmd_buffer[:-1]
-            elif key == '\n':
-                # TODO: run a command
-                self.add_log('running command: ' + self.menu_cmd_buffer)
-                self.run_command(self.menu_cmd_buffer)
-                self.menu_cmd_buffer = ''
-                self.menu_state = 'main'
-            else:
-                self.menu_cmd_buffer += self.next_key_press
-
-        elif self.next_key_press == ':':
-            # set the menu to cmd mode
-            self.menu_state = 'cmd'
-
-        elif self.player.is_alive() and not self.player.victory:
-            # check to do any actions
-            for action in self.get_actions():
-                if self.next_key_press == action.key:
-                    action.do_action()
-                    self.do_tick()
-                    self.set_current_room()
-                    break
+        if self.game_state == 'running':
+            # run next game tick
+            self.turns.run_next()
 
     def get_commands(self) -> list:
         """Get all commands that the player can do."""
@@ -131,7 +138,7 @@ class Game():
 
         @CommandAction.register(commands, ['help'], 'get a list of commands')
         def _cmd_help(*args):
-            self.add_log('There is no help.')
+            self.log('There is no help.')
 
         @CommandAction.register(commands, ['quit'], 'quit the game')
         def _cmd_quit(*args):
@@ -155,9 +162,13 @@ class Game():
 
     def get_actions(self) -> list:
         """Get all actions that the player can do."""
-        # self.add_log("getting actions...")
+        # self.log("getting actions...")
 
         action_list = []
+
+        if self.game_state == 'running':
+            # game is running; no actions to do now
+            return action_list
 
         if self.menu_state == 'main':
 
@@ -176,6 +187,10 @@ class Game():
             def _equip():
                 self.menu_state = 'equip_item'
 
+            @QuickAction.register(action_list, 'k', 'attack')
+            def _attack():
+                self.menu_state = 'attack'
+
         elif self.menu_state == 'equip_item':
 
             for i, item in enumerate(list(self.player.inventory.keys())):
@@ -192,8 +207,23 @@ class Game():
                 @QuickAction.register(action_list, str(i+1), f'select {part.name}')
                 def _action(part=part):
                     item = self.menu_selected_item
-                    self.add_log(f'your {part.name} is now holding {item.name}')
+                    self.log(f'your {part.name} is now holding {item.name}')
+                    part.held_item = item
                     self.menu_selected_item = None
+                    self.menu_state = 'main'
+
+        elif self.menu_state == 'attack':
+
+            @QuickAction.register(action_list, '1', 'yourself')
+            def _self_attack():
+                self.player.attack(self.player)
+                self.menu_state = 'main'
+
+            for i, ent in enumerate(self.room.entities):
+
+                @QuickAction.register(action_list, str(i+2), f'{ent.name}')
+                def _attack(ent=ent):
+                    self.player.attack(ent)
                     self.menu_state = 'main'
 
         return action_list

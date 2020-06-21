@@ -9,7 +9,7 @@ import re
 
 
 scr = CursesScreen()
-game = Game()
+game = Game(scr)
 
 map_size = vec2(10, 10)
 # map_center = map_size // 2
@@ -33,7 +33,8 @@ def on_render(scr: CursesScreen, key: str):
 
     global map_view
 
-    game.send_key_press(key)
+    game.on_key_pressed(key)
+    game.update()
 
     width, height = scr.get_size()
 
@@ -42,23 +43,35 @@ def on_render(scr: CursesScreen, key: str):
     scr.draw_text(0, 0, title.center(width), style='standout')
     scr.draw_text(21, 2, (
         "Location: " + str(game.player.pos) + "\n"
-        "Last Keypress: " + str(key)
+        "Last Keypress: " + str(key) + "\n"
+        "State: " + game.game_state
     ))
 
-    desc = re.sub(' +', ' ', game.get_description())
+    # desc = re.sub(' +', ' ', game.get_description())
+    # scr.draw_text(21, 5, '\n'.join(textwrap.wrap(desc, width-21)))
 
-    scr.draw_text(21, 5, '\n'.join(textwrap.wrap(desc, width-21)))
-    scr.draw_text(21, 9, actions.format_actions(game.get_actions()))
+    # draw actions
+    scr.draw_text(width - 24, 2, actions.format_actions(game.get_actions()))
 
     # draw console messages
     con_y = 15  # start y position of console
-    for msg in game.log:
+    for msg in game.get_log():
         scr.draw_text(0, con_y, msg.text, style=msg.style, fg=msg.fg, bg=msg.bg)
         con_y += msg.text.count('\n') + 1  # increment y by # of lines
 
     # draw health
     scr.draw_text(0, height-1, 'Health: ' + str(game.player.get_health()),
                   fg=0, bg=9)
+
+    # draw turns
+    scr.draw_text(16, height-1,
+                f' Turn: {game.turns.get_last_entity().name}, Order: {[ent.name for ent in game.turns.order]} ',
+                  fg=0, bg=10)
+
+    # draw fps
+    scr.draw_text(width - 16, height - 1,
+                  ' FPS: {:.2f} '.format(scr.fps),
+                  fg=0, bg=11)
 
     # draw command buffer
     if game.menu_state == 'cmd':
