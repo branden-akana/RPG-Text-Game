@@ -2,9 +2,10 @@
 from vector import vec2
 from screen import CursesScreen
 from elements.map import Map
+from elements.text import Text, _colors
 from game import Game
 
-from pyglet import (window, app, text, clock)
+from pyglet import (window, app, text, clock, gl)
 import re
 import actions
 
@@ -51,22 +52,16 @@ l_title = text.Label(
 )
 
 
-def draw_text(x, y, t: str, *args, **kwargs):
+def draw_text(x, y, t: str, style: str = 'normal', fg=None, bg=None, *args, **kwargs):
 
-    label = text.Label(t,
-        font_name=['Fantasque Sans Mono', 'Courier New'],
-        font_size=12,
-        x=x, y=win.height-y,
-        width=800,
-        multiline=True,
-        color=kwargs.get('color', (255, 255, 255, 255))
-        # anchor_y='bottom'
-    )
-
+    label = Text(game, x, win.height-y, t, style, fg, bg)
     label.draw()
 
 
 e_map = Map(game, 800, 20)
+
+# set clear color
+gl.glClearColor(_colors[0][0]/255.0, _colors[0][1]/255.0, _colors[0][2]/255.0, 1)
 
 
 @win.event
@@ -91,10 +86,13 @@ def on_draw():
     # draw console messages
     con_y = height - 60  # start y position of console
     color = [255, 255, 255, 255]
-    for msg in game.get_log():
+    for i, msg in enumerate(game.get_log()):
         draw_text(50, con_y, msg.text, style=msg.style, fg=msg.fg, bg=msg.bg, color=tuple(color))
-        con_y -= (msg.text.count('\n') + 1) * 20  # increment y by # of lines
-        color[3] -= 10
+        con_y -= 20
+        if i == 0:
+            color[3] -= 20
+        else:
+            color[3] -= 10
 
     # draw health
     draw_text(0, height, 'Health: ' + str(game.player.get_health()),
