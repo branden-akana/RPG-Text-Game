@@ -21,11 +21,11 @@ if typing.TYPE_CHECKING:
 
 class Game(Logger):
 
-    def __init__(self, scr: 'CursesScreen'):
+    def __init__(self):
 
-        Logger.__init__(self)
+        Logger.__init__(self, 20)
 
-        self.scr: 'CursesScreen' = scr
+        # self.scr: 'CursesScreen' = scr
 
         # a string describing the current situation
         self.status = ''
@@ -92,19 +92,21 @@ class Game(Logger):
 
         if self.menu_state == 'cmd':
             # add the last pressed key to the cmd buffer
-            if key == 'KEY_BACKSPACE':
+            if key == 'KEY_BACKSPACE' or key == 'backspace':
                 # remove last character
                 self.menu_cmd_buffer = self.menu_cmd_buffer[:-1]
-            elif key == '\n':
+            elif key == 'space':
+                self.menu_cmd_buffer += ' '
+            elif key == '\n' or key == 'enter':
                 # TODO: run a command
                 # self.log('running command: ' + self.menu_cmd_buffer)
                 self.run_command(self.menu_cmd_buffer)
                 self.menu_cmd_buffer = ''
                 self.menu_state = 'main'
             else:
-                self.menu_cmd_buffer += self.input_key
+                self.menu_cmd_buffer += key
 
-        elif key == ':':
+        elif key == ':' or key == 'colon':
             # set the menu to cmd mode
             self.menu_state = 'cmd'
 
@@ -155,6 +157,9 @@ class Game(Logger):
         for command in self.get_commands():
             if root in command.terms:
                 command.do_command(args)
+                return
+
+        self.log(f'I don\'t know what you mean by "{cmd}"')
 
     def get_movement_actions(self) -> list:
         """Get all movement actions that the player can do."""

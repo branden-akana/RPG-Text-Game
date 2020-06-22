@@ -28,12 +28,18 @@ class Logger:
     def log(self, text: str, fg=15, bg=0, style='normal'):
         """Log a message."""
 
-        # insert to the front of the list
-        self.log_messages.insert(0, Message(text, style, fg, bg))
+        lines = text.splitlines()
 
-        # delete last message if above log_limit
-        if len(self.log_messages) > self.log_limit:
-            del self.log_messages[self.log_limit]
+        for line in lines:
+
+            # insert to the front of the list
+            self.log_messages.insert(0, Message(line, style, fg, bg))
+            # self.log_messages.append(Message(text, style, fg, bg))
+
+            # delete last message if above log_limit
+            if len(self.log_messages) > self.log_limit:
+                del self.log_messages[self.log_limit]
+                # del self.log_messages[0]
 
     def info(self, text: str):
         self.log(text, 8)  # dark gray
