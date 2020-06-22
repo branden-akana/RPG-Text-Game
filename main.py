@@ -1,6 +1,7 @@
 
 from vector import vec2
 from screen import CursesScreen
+from elements.map import Map
 from game import Game
 
 from pyglet import (window, app, text, clock)
@@ -53,7 +54,7 @@ l_title = text.Label(
 def draw_text(x, y, t: str, *args, **kwargs):
 
     label = text.Label(t,
-        font_name='Fantasque Sans Mono',
+        font_name=['Fantasque Sans Mono', 'Courier New'],
         font_size=12,
         x=x, y=win.height-y,
         width=800,
@@ -65,6 +66,9 @@ def draw_text(x, y, t: str, *args, **kwargs):
     label.draw()
 
 
+e_map = Map(game, 800, 20)
+
+
 @win.event
 def on_draw():
 
@@ -73,6 +77,8 @@ def on_draw():
     win.clear()
 
     l_title.draw()
+
+    e_map.draw()
 
     draw_text(21, 100, (
         "Location: " + str(game.player.pos) + "\n"
@@ -108,7 +114,7 @@ def on_draw():
     if game.menu_state == 'cmd':
         draw_text(12, height-20, ':' + game.menu_cmd_buffer, 'standout')
 
-    win.flip()
+    # win.flip()
 
 
 def on_update(dt):
