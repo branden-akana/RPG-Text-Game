@@ -43,12 +43,9 @@ def on_key_press(key, modifiers):
     game.on_key_pressed(strkey)
 
 
-l_title = text.Label(
-    'Welcome to Super Fuck You',
-    font_name='Fantasque Sans Mono',
-    font_size=12,
-    x=win.width//2, y=win.height-20,
-    anchor_x='center'
+l_title = Text(game, win.width // 2, win.height - 20,
+    'Welcome to Super Fuck You', 'normal',
+    fg=0, bg=7
 )
 
 
@@ -81,14 +78,14 @@ def on_draw():
     ))
 
     # draw actions
-    draw_text(width - 400, 200, actions.format_actions(game.get_actions()))
+    draw_text(width - 400, 200, actions.format_actions(game.get_actions()), bg=8)
 
     # draw console messages
     con_y = height - 60  # start y position of console
     color = [255, 255, 255, 255]
     for i, msg in enumerate(game.get_log()):
         draw_text(50, con_y, msg.text, style=msg.style, fg=msg.fg, bg=msg.bg, color=tuple(color))
-        con_y -= 20
+        con_y -= 25
         if i == 0:
             color[3] -= 20
         else:

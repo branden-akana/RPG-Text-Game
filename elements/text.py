@@ -35,7 +35,8 @@ _colors: list = get_wal_colors()
 class Text:
 
     def __init__(self, game: 'Game', x, y, text: str, style: str = 'normal',
-                 fg=None, bg=None):
+                 fg=None, bg=None,
+                 padding=10):
 
         def _get_color(idx, default):
             try:
@@ -53,11 +54,13 @@ class Text:
             x=x, y=y,
             width=800,
             multiline=True,
-            color=self.fg_color
+            anchor_y='bottom',
+            color=self.fg_color,
         )
 
         self.e_background = pyglet.shapes.Rectangle(
-            x, y - 4, self.e_label.content_width, self.e_label.content_height,
+            x - padding/2, y - padding/2,
+            self.e_label.content_width + padding, self.e_label.content_height + padding,
             color=self.bg_color
         )
 
