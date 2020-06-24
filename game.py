@@ -4,6 +4,7 @@ import world
 import actions
 import typing
 
+from colors import Colors
 from tiles import Room
 from turns import TurnManager
 from dataclasses import dataclass
@@ -26,6 +27,9 @@ class Game(Logger):
         Logger.__init__(self, 20)
 
         # self.scr: 'CursesScreen' = scr
+
+        # the current colorscheme to use
+        self.colorscheme = Colors()
 
         # a string describing the current situation
         self.status = ''

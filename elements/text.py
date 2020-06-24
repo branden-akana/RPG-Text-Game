@@ -1,6 +1,4 @@
 
-import os
-import subprocess
 import pyglet
 
 from typing import TYPE_CHECKING
@@ -10,53 +8,20 @@ if TYPE_CHECKING:
     from game import Game
 
 
-def get_colors():
-
-    try:  # attempt to get the current colors used by pywal.
-        res = subprocess.run(['cat', os.path.expanduser('~/.cache/wal/colors')],
-                             stdout=subprocess.PIPE)
-        lines = res.stdout
-        colors = []
-
-        if lines:
-            for line in lines.splitlines():
-                # print('{} {} {}'.format(line[1:3], line[3:5], line[5:7]))
-                r = int(line[1:3], 16)
-                g = int(line[3:5], 16)
-                b = int(line[5:7], 16)
-                colors.append((r, g, b))
-
-        return colors
-
-    except Exception:
-        return [(0, 0, 0),
-                (255, 255, 255),
-                (255, 255, 255),
-                (255, 255, 255),
-                (255, 255, 255),
-                (255, 255, 255),
-                (255, 255, 255),
-                (255, 255, 255)
-                ] * 2
-
-
-_colors: list = get_colors()
-
-
 class Text:
 
     def __init__(self, game: 'Game', x, y, text: str, style: str = 'normal',
-                 fg=None, bg=None,
+                 fg=None, bg=None, alpha: float = 1.0,
                  padding=10):
 
         def _get_color(idx, default):
             try:
-                return _colors[idx]
+                return game.colorscheme[idx]
             except Exception:
                 return default
 
         if not fg or type(fg) is int:
-            self.fg_color = _get_color(fg, (255, 255, 255)) + (255,)
+            self.fg_color = _get_color(fg, (255, 255, 255)) + (int(255 * alpha),)
         else:
             self.fg_color = fg
 
@@ -68,7 +33,7 @@ class Text:
         self.e_label = pyglet.text.Label(
             text,
             font_name=['Courier New', 'Hack'],
-            font_size=12,
+            font_size=11,
             x=x, y=y,
             width=800,
             multiline=True,

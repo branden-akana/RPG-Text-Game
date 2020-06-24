@@ -2,8 +2,9 @@
 from vector import vec2
 from screen import CursesScreen
 from elements.map import Map
-from elements.text import Text, _colors
+from elements.text import Text
 from game import Game
+from entity import LivingEntity
 
 from pyglet import (window, app, text, clock, gl)
 import re
@@ -49,16 +50,18 @@ l_title = Text(game, win.width // 2, win.height - 20,
 )
 
 
-def draw_text(x, y, t: str, style: str = 'normal', fg=None, bg=None, *args, **kwargs):
+def draw_text(x, y, t: str, style: str = 'normal', fg=None, bg=None, alpha=1.0, *args, **kwargs):
 
-    label = Text(game, x, win.height-y, t, style, fg, bg)
+    label = Text(game, x, win.height-y, t, style, fg, bg, alpha=alpha)
     label.draw()
 
 
 e_map = Map(game, 800, 20)
 
 # set clear color
-gl.glClearColor(_colors[0][0]/255.0, _colors[0][1]/255.0, _colors[0][2]/255.0, 1)
+gl.glClearColor(game.colorscheme[0][0]/255.0,
+                game.colorscheme[0][1]/255.0,
+                game.colorscheme[0][2]/255.0, 1)
 
 
 @win.event
@@ -83,17 +86,25 @@ def on_draw():
     # draw console messages
     con_y = height - 60  # start y position of console
     color = [255, 255, 255, 255]
+    alpha = 1.0
     for i, msg in enumerate(game.get_log()):
-        draw_text(50, con_y, msg.text, style=msg.style, fg=tuple(color), bg=msg.bg)
+        draw_text(50, con_y, msg.text, style=msg.style, fg=msg.fg, bg=msg.bg,
+                  alpha=alpha)
         con_y -= 25
         if i == 0:
-            color[3] -= 20
+            alpha -= 0.1
         else:
-            color[3] -= 10
+            alpha -= 0.03
 
     # draw health
     draw_text(0, height, 'Health: ' + str(game.player.get_health()),
                   fg=0, bg=9)
+
+    # draw health of other entities
+    hp_y = height
+    for ent in [ent for ent in game.room.entities if isinstance(ent, LivingEntity)]:
+        draw_text(width - 200, hp_y, f'{ent.name}: {ent.get_health()}', fg=0, bg=11)
+        hp_y -= 25
 
     # draw turns
     draw_text(16 * 12, height-1,
