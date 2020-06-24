@@ -39,20 +39,25 @@ def format_vector(vec: vec2) -> str:
 class Action():
     """An action that can be taken."""
 
-    def __init__(self, desc: str):
+    def __init__(self, desc: str, fn=None):
         # the description of this action
         self.desc = desc or "unknown action"
+
+        self.fn = fn or self.do_action
 
     def do_action(self):
         """Run the action."""
         pass
 
+    def __call__(self):
+        self.fn()
+
 
 class QuickAction(Action):
     """An action that is bound to a hotkey."""
 
-    def __init__(self, key: str, desc: str):
-        Action.__init__(self, desc)
+    def __init__(self, key: str, desc: str, fn=None):
+        Action.__init__(self, desc, fn)
 
         # the hotkey that will run this action
         self.key = key
@@ -69,7 +74,7 @@ class QuickAction(Action):
                     QuickAction.__init__(self, key, desc)
 
                 def do_action(self):
-                    func()
+                    return func()
 
             # add an instance of this class to our list of actions
             actions.append(CustomAction())
@@ -91,7 +96,7 @@ class CommandAction(Action):
         pass
 
     def do_action(self):
-        self.do_command()
+        return self.do_command()
 
     @staticmethod
     def register(actions: list, terms: list, desc: str = 'a custom action'):
@@ -105,7 +110,7 @@ class CommandAction(Action):
                     CommandAction.__init__(self, terms, desc)
 
                 def do_command(self, *args):
-                    func(*args)
+                    return func(*args)
 
             # add an instance of this class to our list of actions
             actions.append(CustomAction())
@@ -164,7 +169,7 @@ class MoveUp(PlayerAction):
     def __init__(self, player):
         super().__init__(player, 'w', 'move up')
 
-    def do_action(self):
+    def do_action(self, *args):
         self.player.move_up()
 
 
@@ -173,7 +178,7 @@ class MoveDown(PlayerAction):
     def __init__(self, player):
         super().__init__(player, 's', 'move down')
 
-    def do_action(self):
+    def do_action(self, *args):
         self.player.move_down()
 
 
@@ -182,7 +187,7 @@ class MoveRight(PlayerAction):
     def __init__(self, player):
         super().__init__(player, 'd', 'move right')
 
-    def do_action(self):
+    def do_action(self, *args):
         self.player.move_right()
 
 
@@ -191,7 +196,7 @@ class MoveLeft(PlayerAction):
     def __init__(self, player):
         super().__init__(player, 'a', 'move left')
 
-    def do_action(self):
+    def do_action(self, *args):
         self.player.move_left()
 
 

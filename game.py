@@ -4,6 +4,7 @@ import world
 import actions
 import typing
 
+from actionmenu import MainMenu
 from colors import Colors
 from tiles import Room
 from turns import TurnManager
@@ -54,6 +55,8 @@ class Game(Logger):
         # 'input' -> game is waiting for player input
         # 'running' -> time is progressing
         self.game_state = 'input'
+
+        self.menu = MainMenu(self)
 
         # the state of the action menu
         # tells the game what actions to display
@@ -121,14 +124,15 @@ class Game(Logger):
 
         elif self.player.is_alive() and not self.player.victory:
             # check to do any actions
-            for action in self.get_actions():
-                if key == action.key:
-                    action.do_action()
-                    self.set_current_room()
-                    # resume game
-                    self.game_state = 'running'
-                    # self.do_tick()
-                    break
+            self.menu = self.menu.handle_input(key)
+            # for action in self.get_actions():
+            #     if key == action.key:
+            #         action.do_action()
+            #         self.set_current_room()
+            #         # resume game
+            #         self.game_state = 'running'
+            #         # self.do_tick()
+            #         break
 
     def get_room(self, x, y) -> str:
         """Get a room by its coordinates."""
@@ -172,75 +176,8 @@ class Game(Logger):
 
     def get_movement_actions(self) -> list:
         """Get all movement actions that the player can do."""
+        # TODO: move this into actionmenu.py
         return self.world.get_movement_actions(self.player.pos, self.player)
-
-    def get_actions(self) -> list:
-        """Get all actions that the player can do."""
-        # self.log("getting actions...")
-
-        action_list = []
-
-        if self.game_state == 'running':
-            # game is running; no actions to do now
-            return action_list
-
-        if self.menu_state == 'main':
-
-            # get movement actions
-            action_list += self.get_movement_actions()  # get movement actions
-
-            # get room actions
-            if self.room:
-                action_list += self.room.get_actions(self.player)  # get room actions
-
-            # debug actions
-            action_list.append(actions.CheckBodyAction(self.player))
-            action_list.append(actions.CheckInventory(self.player))
-
-            @QuickAction.register(action_list, 'e', 'equip an item')
-            def _equip():
-                self.menu_state = 'equip_item'
-
-            @QuickAction.register(action_list, 'k', 'attack')
-            def _attack():
-                self.menu_state = 'attack'
-
-        elif self.menu_state == 'equip_item':
-
-            for i, item in enumerate(list(self.player.inventory.keys())):
-
-                @QuickAction.register(action_list, str(i+1), f'select {item.name}')
-                def _select_item(item=item):
-                    self.menu_selected_item = item
-                    self.menu_state = 'equip_part'
-
-        elif self.menu_state == 'equip_part':
-
-            for i, part in enumerate(self.player.body.get_equippable_parts()):
-
-                @QuickAction.register(action_list, str(i+1), f'select {part.name}')
-                def _action(part=part):
-                    item = self.menu_selected_item
-                    self.log(f'your {part.name} is now holding {item.name}')
-                    part.held_item = item
-                    self.menu_selected_item = None
-                    self.menu_state = 'main'
-
-        elif self.menu_state == 'attack':
-
-            @QuickAction.register(action_list, '1', 'yourself')
-            def _self_attack():
-                self.player.attack(self.player)
-                self.menu_state = 'main'
-
-            for i, ent in enumerate(self.room.entities):
-
-                @QuickAction.register(action_list, str(i+2), f'{ent.name}')
-                def _attack(ent=ent):
-                    self.player.attack(ent)
-                    self.menu_state = 'main'
-
-        return action_list
 
     def get_description(self, skill_check: int = 10):
         """Get a description of the room based on what the player sees.

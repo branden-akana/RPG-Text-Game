@@ -81,7 +81,8 @@ def on_draw():
     ))
 
     # draw actions
-    draw_text(width - 400, 200, actions.format_actions(game.get_actions()), bg=8)
+    # draw_text(width - 400, 200, actions.format_actions(game.get_actions()), bg=8)
+    draw_text(width - 400, 200, actions.format_actions(game.menu.action_list), bg=8)
 
     # draw console messages
     con_y = height - 60  # start y position of console
