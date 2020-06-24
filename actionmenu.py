@@ -177,6 +177,17 @@ class MainMenu(ActionMenu):
 
         # TODO: look action
         # TODO: examine action
+        @self.add_option('x', 'Examine...', [EntityMenu, MainMenu])
+        def _examine(args):
+            ent = args['ent']
+            check = self.game.player.ability_check(10, 'INT')
+            if check:
+                self.game.log(f'You examine the {ent.name}. {check}')
+                self.game.log(f'The abilities of {ent.name} are:')
+                for ability, score in ent.ability_stats.items():
+                    self.game.log(f'{ability}: {score}')
+            else:
+                self.game.log(f'You fail to examine the {ent.name}. {check}')
 
         @self.add_option('e', 'Equip an item...', [InventoryMenu, BodyPartMenu, MainMenu])
         def _equip(args):

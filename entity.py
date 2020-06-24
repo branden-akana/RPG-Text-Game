@@ -2,6 +2,7 @@
 import typing
 import body
 import random
+from stats import AbilityStats
 from actions import Action, create_action
 
 
@@ -31,12 +32,13 @@ class Entity:
         return hash(self.name)
 
 
-class LivingEntity(Entity):
+class LivingEntity(Entity, AbilityStats):
     """Represents an entity that has a body and is able to die."""
 
     def __init__(self, game: 'Game', name: str):
 
         Entity.__init__(self, game, name)
+        AbilityStats.__init__(self)
 
         # the body of the entity
         self.body = body.HumanoidBody(game, self)
