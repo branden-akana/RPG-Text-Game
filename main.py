@@ -84,7 +84,7 @@ def on_draw():
     con_y = height - 60  # start y position of console
     color = [255, 255, 255, 255]
     for i, msg in enumerate(game.get_log()):
-        draw_text(50, con_y, msg.text, style=msg.style, fg=msg.fg, bg=msg.bg, color=tuple(color))
+        draw_text(50, con_y, msg.text, style=msg.style, fg=tuple(color), bg=msg.bg)
         con_y -= 25
         if i == 0:
             color[3] -= 20

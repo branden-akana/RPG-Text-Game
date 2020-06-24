@@ -55,8 +55,15 @@ class Text:
             except Exception:
                 return default
 
-        self.fg_color = _get_color(fg, (255, 255, 255)) + (255,)
-        self.bg_color = _get_color(bg, (0, 0, 0))
+        if not fg or type(fg) is int:
+            self.fg_color = _get_color(fg, (255, 255, 255)) + (255,)
+        else:
+            self.fg_color = fg
+
+        if not bg or type(bg) is int:
+            self.bg_color = _get_color(bg, (0, 0, 0))
+        else:
+            self.bg_color = bg
 
         self.e_label = pyglet.text.Label(
             text,

@@ -22,7 +22,16 @@ class Map:
 
         self.batch = graphics.Batch()
 
-        self.e_box = shapes.Rectangle(x, y, Map.cols * Map.size, Map.rows * Map.size, color=(50, 50, 50), batch=self.batch)
+        self.e_boxes = []
+
+        for pos in self.game.world.room_map.keys():
+
+            box = shapes.Rectangle(
+                x + (pos.x * Map.size), y + ((Map.rows - pos.y) * Map.size),
+                Map.size, Map.size,
+                color=(50, 50, 50), batch=self.batch
+            )
+            self.e_boxes.append(box)
 
         self.e_player = shapes.Rectangle(x, y, Map.size, Map.size, color=(255, 255, 255), batch=self.batch)
 
