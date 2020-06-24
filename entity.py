@@ -55,6 +55,10 @@ class LivingEntity(Entity, AbilityStats):
     def attack(self, ent: Entity):
         """Attack an entity."""
 
+        # attacker checks
+        dmg_check = self.ability_check(10, 'STR')
+        hit_check = self.ability_roll('DEX', 3)
+
         # get body parts that can attack
         parts = [part for part in list(self.body.parts.values())
                  if part.can_attack_bare or
@@ -67,28 +71,45 @@ class LivingEntity(Entity, AbilityStats):
             return
 
         # TODO: be able to choose a specific way to attack
-        # for now pick one at random
-        part = random.choice(parts)
+        # for now automatically find the best weapon
+        part = parts[0]
+        for _part in parts:
+            if _part.get_base_damage() > part.get_base_damage():
+                part = _part
 
         # calculate damage to deal
 
         dmg = 1
+
         if part.can_attack_armed and part.held_item:
-            self.game.log(
-                f'{self.name} attacks {ent.name} with {part.name} holding {part.held_item.name}!'
-            )
+            # self.game.log(
+                # f'{self.name} attacks {ent.name} with {part.name} holding {part.held_item.name}!'
+            # )
             dmg = part.held_item.damage
+            weapon = part.held_item
         elif part.can_attack_bare:
-            self.game.log(
-                f'{self.name} attacks {ent.name} with the {part.name}!'
-            )
+            # self.game.log(
+                # f'{self.name} attacks {ent.name} with the {part.name}!'
+            # )
+            weapon = part
             # TODO: implement unarmed damage stat
 
         # calculate effect of damage
 
         if isinstance(ent, LivingEntity):
-            hurt_part = ent.hurt(dmg)
-            self.game.log(f'{self.name} does {dmg} damage to the {hurt_part.name}!')
+            # defender checks
+            dodge_check = ent.ability_check(sum(hit_check), 'DEX')
+
+            if dodge_check:
+                # self.game.log(f'The attack misses!')
+                self.game.log(f'{self.name} misses an attack on {ent.name}!')
+            else:
+                self.game.log(f'{self.name} hits {ent.name} with a {weapon.name}!')
+                def_check = ent.ability_check(10, 'CON')
+
+                dmg = int(dmg * dmg_check.get_percent()) + 1
+                hurt_part = ent.hurt(dmg)
+                self.game.info(f'{ent.name} takes {dmg} damage to the {hurt_part.name}!')
         else:
             self.game.log('It does nothing!')
 

@@ -54,6 +54,19 @@ class BodyPart:
 
     # TODO: per-part health
 
+    def get_base_damage(self):
+        """Get the damage of the weapon this part is holding, or the damage of
+        this body part if it can attack unarmed."""
+
+        if self.can_attack_armed and self.held_item:
+            return self.held_item.damage
+
+        elif self.can_attack_bare:
+            return 1.0
+
+        else:
+            return 0.0
+
 
 class Body:
     """A representation of parts composing an entitys' body."""

@@ -60,6 +60,14 @@ class AbilityStats:
         """Get the score for an ability."""
         return self.ability_stats[ability]
 
+    def ability_roll(self, ability, num_dice=2):
+
+        rolls = []
+        for _ in range(num_dice):  # number of rolls
+            rolls.append(random.randint(1, 6))
+
+        return [self.get_base_ability_score(ability)] + rolls
+
     def ability_check(self, difficulty, ability):
 
         rolls = []
