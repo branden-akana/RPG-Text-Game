@@ -22,7 +22,7 @@ class Enemy(LivingEntity):
             if type(ent) is Player:
 
                 def _attack():
-                    # self.game.log(f'{self.name} is attacking {ent.name}!', fg=1)
+                    # self.game.log(f'{self.name} is attacking {ent.get_name()}!', fg=1)
                     self.attack(ent)
 
                 return create_action('', _attack)

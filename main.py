@@ -104,12 +104,12 @@ def on_draw():
     # draw health of other entities
     hp_y = height
     for ent in [ent for ent in game.room.entities if isinstance(ent, LivingEntity)]:
-        draw_text(width - 200, hp_y, f'{ent.name}: {ent.get_health()}', fg=0, bg=11)
+        draw_text(width - 200, hp_y, f'{ent.get_name()}: {ent.get_health()}', fg=0, bg=11)
         hp_y -= 25
 
     # draw turns
     draw_text(16 * 12, height-1,
-                f' Turn: {game.turns.get_last_entity().name}, Order: {[ent.name for ent in game.turns.order]} ',
+                f' Turn: {game.turns.get_last_entity().name}, Order: {[ent.get_name() for ent in game.turns.order]} ',
                   fg=0, bg=10)
 
     # draw fps

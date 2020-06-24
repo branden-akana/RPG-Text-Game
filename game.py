@@ -204,7 +204,7 @@ class Game(Logger):
 
                 # get entities in room
                 for ent in self.room.entities:
-                    lines += [f"You see a {ent.name}."]
+                    lines += [f"You see a {ent.get_name()}."]
 
         return ' '.join(lines)
 

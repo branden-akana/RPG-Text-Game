@@ -21,6 +21,9 @@ class Entity:
         # the name of the entity
         self.name = name
 
+    def get_name(self) -> str:
+        return self.name
+
     def __eq__(self, o):
 
         if type(self) == type(o):
@@ -48,6 +51,12 @@ class LivingEntity(Entity, AbilityStats):
 
     def get_health(self) -> int:
         return self.body.health
+
+    def get_name(self) -> str:
+        if self.is_alive():
+            return self.name
+        else:
+            return 'corpse of a ' + self.name
 
     def is_alive(self) -> int:
         return self.body.is_alive()
@@ -83,13 +92,13 @@ class LivingEntity(Entity, AbilityStats):
 
         if part.can_attack_armed and part.held_item:
             # self.game.log(
-                # f'{self.name} attacks {ent.name} with {part.name} holding {part.held_item.name}!'
+                # f'{self.name} attacks {ent.get_name()} with {part.name} holding {part.held_item.name}!'
             # )
             dmg = part.held_item.damage
             weapon = part.held_item
         elif part.can_attack_bare:
             # self.game.log(
-                # f'{self.name} attacks {ent.name} with the {part.name}!'
+                # f'{self.name} attacks {ent.get_name()} with the {part.name}!'
             # )
             weapon = part
             # TODO: implement unarmed damage stat
@@ -102,14 +111,17 @@ class LivingEntity(Entity, AbilityStats):
 
             if dodge_check:
                 # self.game.log(f'The attack misses!')
-                self.game.log(f'{self.name} misses an attack on {ent.name}!')
+                self.game.log(f'{self.name} misses an attack on {ent.get_name()}!')
             else:
-                self.game.log(f'{self.name} hits {ent.name} with a {weapon.name}!')
+                self.game.log(f'{self.name} hits {ent.get_name()} with a {weapon.name}!')
                 def_check = ent.ability_check(10, 'CON')
 
                 dmg = int(dmg * dmg_check.get_percent()) + 1
                 hurt_part = ent.hurt(dmg)
-                self.game.info(f'{ent.name} takes {dmg} damage to the {hurt_part.name}!')
+                self.game.info(f'{ent.get_name()} takes {dmg} damage to the {hurt_part.name}!')
+                if not ent.is_alive():
+                    self.game.info(f'{ent.get_name()} has died')
+
         else:
             self.game.log('It does nothing!')
 

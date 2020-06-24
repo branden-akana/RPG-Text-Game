@@ -29,7 +29,7 @@ class TurnManager:
                 if isinstance(ent, LivingEntity)]
 
         # if len(order):
-            # self.game.info(f'** order: {[ent.name for ent in order]} **')
+            # self.game.info(f'** order: {[ent.get_name() for ent in order]} **')
 
         self.idx = 0
         self.last_idx = 0
@@ -49,7 +49,7 @@ class TurnManager:
             ent = self.order[self.idx]
 
             if ent.is_alive():
-                # self.game.info(f'it is now {ent.name} turn')
+                # self.game.info(f'it is now {ent.get_name()} turn')
                 action = ent.think()
                 if action: action.do_action()
 

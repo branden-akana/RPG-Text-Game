@@ -108,7 +108,7 @@ def on_draw():
 
     # draw turns
     draw_text(16 * 12, height-1,
-                f' Turn: {game.turns.get_last_entity().name}, Order: {[ent.name for ent in game.turns.order]} ',
+                f' Turn: {game.turns.get_last_entity().name}, Order: {[ent.get_name() for ent in game.turns.order]} ',
                   fg=0, bg=10)
 
     # draw fps
@@ -174,7 +174,7 @@ def on_draw(scr: CursesScreen, key: str):
 
     # draw turns
     scr.draw_text(16, height-1,
-                f' Turn: {game.turns.get_last_entity().name}, Order: {[ent.name for ent in game.turns.order]} ',
+                f' Turn: {game.turns.get_last_entity().name}, Order: {[ent.get_name() for ent in game.turns.order]} ',
                   fg=0, bg=10)
 
     # draw fps

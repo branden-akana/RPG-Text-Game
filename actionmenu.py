@@ -161,7 +161,7 @@ class EntityMenu(ActionMenu):
 
         for i, ent in enumerate(self.game.room.entities):
 
-            @self.add_option(str(i+2), f'{ent.name}')
+            @self.add_option(str(i+2), f'{ent.get_name()}')
             def _attack(ent=ent):
                 self.args['ent'] = ent
 
@@ -182,18 +182,24 @@ class MainMenu(ActionMenu):
             ent = args['ent']
             check = self.game.player.ability_check(10, 'INT')
             if check:
-                self.game.log(f'You examine the {ent.name}. {check}')
-                self.game.log(f'The abilities of {ent.name} are:')
+                self.game.log(f'You examine the {ent.get_name()}. {check}')
+                self.game.log(f'The abilities of {ent.get_name()} are:')
                 for ability, score in ent.ability_stats.items():
                     self.game.log(f'{ability}: {score}')
             else:
-                self.game.log(f'You fail to examine the {ent.name}. {check}')
+                self.game.log(f'You fail to examine the {ent.get_name()}. {check}')
 
         @self.add_option('e', 'Equip an item...', [InventoryMenu, BodyPartMenu, MainMenu])
         def _equip(args):
             item, part = args['item'], args['part']
             part.held_item = item
             self.game.log(f'your {part.name} is now holding {item.name}')
+
+        @self.add_option('t', 'Take...', [EntityMenu, MainMenu])
+        def _take(args):
+            ent = args['ent']
+            self.game.player.give_item(ent)
+            # self.game.log(f'You take the {ent.get_name()}')
 
         @self.add_option('k', 'Attack...', [EntityMenu, MainMenu])
         def _attack(args):
