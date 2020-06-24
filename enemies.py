@@ -1,6 +1,8 @@
 #!/usr/bin/python3 env
 
 from entity import LivingEntity
+from player import Player
+from actions import create_action
 
 
 class Enemy(LivingEntity):
@@ -12,6 +14,20 @@ class Enemy(LivingEntity):
         self.damage = damage
 
         #TODO: be able to set HP
+
+    def think(self):
+
+        # find player
+        for ent in self.game.get_entities():
+            if type(ent) is Player:
+
+                def _attack():
+                    self.game.log(f'{self.name} is attacking {ent.name}!')
+                    self.attack(ent)
+
+                return create_action('', _attack)
+
+        return super().think()
 
 
 class GiantSpider(Enemy):

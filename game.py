@@ -79,6 +79,11 @@ class Game(Logger):
 
         # TODO: Room.intro_text() is deprecated
 
+    def get_entities(self):
+        """Get all entities (in the current room)."""
+
+        return self.room.entities + [self.player]
+
     def do_tick(self):
         """Calculate one unit of time."""
 
