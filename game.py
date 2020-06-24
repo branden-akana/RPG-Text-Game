@@ -2,7 +2,7 @@
 
 import world
 import actions
-import typing
+from typing import (TYPE_CHECKING, List)
 
 from actionmenu import MainMenu
 from colors import Colors
@@ -17,7 +17,7 @@ QuickAction = actions.QuickAction
 CommandAction = actions.CommandAction
 
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from screen import CursesScreen
 
 
@@ -146,10 +146,10 @@ class Game(Logger):
             # run next game tick
             self.turns.run_next()
 
-    def get_commands(self) -> list:
+    def get_commands(self) -> List[CommandAction]:
         """Get all commands that the player can do."""
 
-        commands = []
+        commands: List[CommandAction] = []
 
         @CommandAction.register(commands, ['help'], 'get a list of commands')
         def _cmd_help(*args):
@@ -178,35 +178,6 @@ class Game(Logger):
         """Get all movement actions that the player can do."""
         # TODO: move this into actionmenu.py
         return self.world.get_movement_actions(self.player.pos, self.player)
-
-    def get_description(self, skill_check: int = 10):
-        """Get a description of the room based on what the player sees.
-        If a skill check is provided, change the description based
-        on the value of the skill check.
-        """
-
-        if not self.room:
-            return "You are out of bounds."
-
-        lines = []
-
-        if skill_check <= 0:  # failed check
-            lines += ["You cannot see anything."]
-
-        else:
-            if self.room.light_level == 0:
-                lines += ["It is too dark to see anything."]
-
-            else:
-                # get number of paths
-                num_paths = len(self.get_movement_actions())
-                lines += [f"There are {num_paths} paths."]
-
-                # get entities in room
-                for ent in self.room.entities:
-                    lines += [f"You see a {ent.get_name()}."]
-
-        return ' '.join(lines)
 
 
 # if __name__ == '__main__':

@@ -33,9 +33,11 @@ class StatCheck:
             eq += f'+{roll}'
 
         if self.is_passed():
-            return f'({self.ability}?{self.difficulty} => {eq} success)'
+            # return f'({self.ability}?{self.difficulty} => {eq} success)'
+            return f'({self.ability} {self.difficulty}: success)'
         else:
-            return f'({self.ability}?{self.difficulty} => {eq} failure)'
+            # return f'({self.ability}?{self.difficulty} => {eq} failure)'
+            return f'({self.ability} {self.difficulty}: failure)'
 
     def __bool__(self):
         return self.is_passed()

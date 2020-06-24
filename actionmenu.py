@@ -185,7 +185,7 @@ class MainMenu(ActionMenu):
                 self.game.log(f'You examine the {ent.get_name()}. {check}')
                 self.game.log(f'The abilities of {ent.get_name()} are:')
                 for ability, score in ent.ability_stats.items():
-                    self.game.log(f'{ability}: {score}')
+                    self.game.log(f'{ability}: {score} ({score+2} - {score+12})')
             else:
                 self.game.log(f'You fail to examine the {ent.get_name()}. {check}')
 
@@ -204,3 +204,39 @@ class MainMenu(ActionMenu):
         @self.add_option('k', 'Attack...', [EntityMenu, MainMenu])
         def _attack(args):
             self.game.player.attack(args['ent'])
+
+        @self.add_option('l', 'Look around', [MainMenu])
+        def _look(args):
+            """Get a description of the room based on what the player sees.
+            If a skill check is provided, change the description based
+            on the value of the skill check.
+            """
+            room = self.game.room
+
+            if not room:
+                return "You are out of bounds."
+
+            lines = []
+
+            check = self.game.player.ability_check(2, 'WIS')
+
+            self.game.info(f'You look around the room... {check}')
+
+            if not check:  # failed check
+                lines += ["You cannot see anything."]
+
+            else:
+                if room.light_level == 0:
+                    lines += ["It is too dark to see anything."]
+
+                else:
+                    # get number of paths
+                    num_paths = len(self.game.get_movement_actions())
+                    lines += [f"There are {num_paths} paths."]
+
+                    # get entities in room
+                    for ent in room.entities:
+                        lines += [f"You see a {ent.get_name()}."]
+
+            self.game.log(' '.join(lines))
+
